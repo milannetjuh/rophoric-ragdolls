@@ -84,7 +84,7 @@ That means three things at once:
 
 **The approach the user wants: a physics body with human motion.** The body is **always fully physical** and reacts to everything, while animation and control only *guide* it, so that its movement looks like mocap. Physics comes first, made to look human. That's not the same as "animation with some physics blended in at hits".
 
-The models are **Half Sword, Blade & Sorcery and Boneworks / Bonelab** (fully physics-driven bodies) for how physical it should be, and **Red Dead Redemption 2** (Euphoria with mocap-quality motion) for how human it should look. Also Euphoria in GTA IV and the PuppetMaster asset for Unity: active ragdolls that try to stay upright and act, and that physics can overpower. The reference is the Roblox game **"Bloody Ragdoll Physics"**. Match its level of violence: no extra blood or gore effects.
+The models are **Half Sword, Blade & Sorcery and Boneworks / Bonelab** (fully physics-driven bodies) for how physical it should be, and **Red Dead Redemption 2** (Euphoria with mocap-quality motion) for how human it should look. Also Euphoria in GTA IV and the PuppetMaster asset for Unity: active ragdolls that try to stay upright and act, and that physics can overpower. The reference is the Roblox game **"Bloody Ragdoll Physics"**. On top of its motion, this engine adds **full gore**: blood, bruises and wounds, dismemberment and slicing (section 5b).
 
 ---
 
@@ -264,9 +264,59 @@ Document the public interface in `docs/ENGINE.md`: how to spawn a dummy, apply a
 5. **Falls:** knockdowns, the ground, getting up, death.
 6. **Behaviour and personality:** back off, return, fight back or flee, presets.
 7. **Scale-readiness:** a cheap idle mode, waking up when hit, a quick performance check with 10–15 dummies.
-8. **Polish:** variety, documentation (`docs/ENGINE.md`).
+8. **Gore:** blood, bruises and wounds, dismemberment, slicing, and the body reacting to its injuries (section 5b).
+9. **Polish:** variety, documentation (`docs/ENGINE.md`).
 
 You'll likely finish several milestones before the first test in Studio. If you're unsure how something will feel, don't guess silently: make it a config value, note it in `INTEGRATION.md`, and move on. The most important thing for the first Studio run is that pressing Play gives a dummy you can punch, even if some systems are switched off.
+
+---
+
+## 5b. Gore and injuries
+
+The user wants **full gore**, and **you build all of it** as part of the core: the effects as well as the engine support. It's used by normal punches and, later, by abilities (blades, powers and so on) that the second chat will add. The same rule applies as for motion: describe the look, and leave the method to you.
+
+### What the user wants
+
+- **Blood:** splatter on hits that matches the hit's force and direction, drips, stains on the body and the ground, and pools under bodies that are bleeding or dead.
+- **Bruises and wounds:** marks that appear **where** the body was hit and **build up** with repeated hits: bruises from blunt hits, cuts and gashes from blades, wounds that bleed. A dummy that has taken a beating should look like it.
+- **Dismemberment:** limbs and heads can come off, cut cleanly or torn. The severed part is a physical object that falls, rolls and bleeds. The stump shows a wound and bleeds.
+- **Slicing:** bodies and body parts can be cut **along the line of a blade or ability**, not only at the joints. Both pieces are physical, with visible cut faces.
+- **Normal punches use gore too:** blood and bruises from punches, more from heavy punches. Dismemberment and slicing need enough force or the right attack (abilities). A punch never takes a limb off.
+
+### As realistic as possible (the user's emphasis)
+
+The gore must look **as realistic as Roblox can possibly make it.** Cheap, blocky "Roblox gore" is exactly what the user doesn't want. Specifically:
+
+- **No cylinder blood puddles,** and no flat discs, spheres or plain red parts standing in for blood. Pools must look like real liquid on the ground: irregular, organic edges, spreading out over time from where the blood is coming from, following the ground, slightly glossy and wet, darker and thicker in the middle. They must not stick out above the floor, clip through it, or float.
+- **No uniform red cubes or balls** for spatter. Blood droplets fly in arcs with gravity, stretch with their speed, and leave **splatter marks shaped by how they landed:** round drops when falling straight down, elongated streaks with tails at an angle, spray patterns from a hard hit.
+- **Real blood colour, and it changes over time:** dark crimson, not bright red. Fresh blood is wet and glossy; older blood darkens and dries. Blood on bodies smears and runs downward.
+- **Bruises look like real bruises:** soft-edged and blotchy. They darken and change colour as they build up (red, then purple and blue), sit exactly where the hits landed, and follow the body's surface. They aren't flat stickers.
+- **Wounds and cut surfaces look like flesh,** not a flat colour: layered skin, tissue and, where it makes sense, bone at severed limbs. They are sized and angled to match the cut that made them.
+- **Severed parts and stumps** bleed in a believable way (a spurt that slows down, then drips) and leave trails as they move.
+
+Use every tool Roblox offers to get there: textures and decals with proper transparency, `SurfaceAppearance` (with PBR materials, normal maps and roughness for wetness), particles with good textures and physics, beams and trails, and runtime images or meshes where they're available. Where the best-looking method needs textures or meshes uploaded to Roblox, which you can't do from your machine, **create the image files in the repo** (for example generated or painted textures as PNG), list them in `INTEGRATION.md` with exactly how they're used, and use a decent fallback until they're uploaded.
+
+The bar is games like those in section 1, not a typical Roblox game. If a choice is between "fast but obviously fake" and "realistic but harder", choose realistic, then make it fast.
+
+### The body reacts to its injuries
+
+Injuries aren't only visual. They change how the body moves, through the same physics:
+- **A missing or badly hurt leg:** the dummy can't keep its balance on it. It falls, kneels or hops, and it crawls or stays down instead of standing up normally.
+- **A missing or hurt arm:** it can't protect or brace with that arm. The other arm takes over, and the hurt arm may be clutched or hang.
+- **Head off, or a fatal cut:** instant death; the body goes limp.
+- **Wounds:** a hurt dummy may clutch a wound, limp or move more slowly, depending on where it was hit.
+- **Missing parts never break the engine:** no errors, no exploding physics, no limb snapping back into place. Every system (balance, steps, arms, get-up, behaviour) must cope with any part missing at any moment, including in the middle of a reaction.
+
+### For abilities (the second chat builds these later)
+
+Make gore part of the **generic hit description** from section 5: a **damage type** (for example blunt, cut, pierce), and for cuts a **cutting line or plane**. Expose simple calls for abilities, along the lines of: apply a wound here, sever this part, slice along this plane, add blood here. Document them in `docs/ENGINE.md`.
+
+### Roblox realities
+
+- Roblox has no built-in way to cut a body in two. Choose a method deliberately (for example precut pieces, runtime geometry, or dynamic meshes), and explain the choice to the user. Any heavy work must never cause a visible hitch: a slice that freezes the game for a frame breaks the smoothness rule.
+- Mark anything you can't confirm offline (for example limits on runtime meshes or images) as `VERIFY IN STUDIO`.
+- **Performance:** blood, decals, severed parts and pools must have caps and cleanup, so 10+ dummies on a map stay at 60 fps.
+- **A gore setting** with at least off, light and full, plus a switch per kind (blood, wounds, dismemberment, slicing), all in settings. That's for tuning and performance, and for Roblox's content rules: Roblox restricts realistic blood and dismemberment to experiences with a suitable maturity rating. Note this in the README so the user can set the experience's rating correctly before publishing.
 
 ---
 
@@ -294,7 +344,7 @@ You'll likely finish several milestones before the first test in Studio. If you'
 | Head | **Depends on the hit:** a hit to the side of the jaw turns the head away along the fist's path; a straight hit to the face sends it straight back |
 | Stumble | **Every normal punch causes 1–2 steps back**, like the reference |
 | Reaction length | About 3s per normal punch |
-| Violence | Like the reference, no extra effects |
+| Violence | **Full gore**: blood, bruises and wounds, dismemberment and slicing. You build it all (section 5b). Punches cause blood and bruises; dismemberment and slicing need enough force or an ability |
 | Punch feel on the player's side | **Nothing extra:** no camera kick, no hit stop, no sounds for now. The dummy's reaction alone must sell the hit |
 | Controls | Your choice; document them in the README |
 | Self-recorded motion | **No:** the user won't record themselves acting out motion (see section 4 for alternatives) |
@@ -341,6 +391,13 @@ Build these into the in-game test report. Exact thresholds can be tuned with the
 **On the ground:** no sliding while down; no hand raised in the air while lying; gets up within about 1.5–3s.
 
 **Scale:** 10–15 idle or walking dummies plus one being hit, at 60 fps in Studio.
+
+**Gore:**
+- Wounds and bruises appear where the hit landed and build up.
+- No primitive blood shapes (cylinders, discs, spheres, plain red parts). Pools have organic edges and lie flat on the ground without clipping.
+- Severing or slicing any part at any moment, including mid-reaction, causes no errors, no physics explosion and no frame hitch.
+- A one-legged dummy can't stand normally; a one-armed dummy protects with the other arm.
+- 10+ bloodied, dismembered bodies on the map still run at 60 fps.
 
 **Frame rate:** the smoothness and reaction-shape results are the same at 60 fps and uncapped (150+ fps).
 

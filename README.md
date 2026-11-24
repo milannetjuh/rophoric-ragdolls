@@ -25,6 +25,7 @@ Most Roblox ragdolls are either fully animated (stiff, the same every time) or f
 - [ ] Protective reactions: a hand to the face, hunching over, backing away
 - [ ] Knockdowns, lying on the ground and getting back up
 - [ ] Damage, knockouts and death
+- [ ] Gore: blood, bruises and wounds, dismemberment and slicing, with bodies that react to their injuries
 - [ ] Simple behaviour: back off, come back, fight back or run away
 - [ ] Per-character personality (toughness, courage, fighting style)
 - [ ] Every value tunable live through settings
@@ -45,6 +46,10 @@ Rophoric doesn't need Rojo or any other tool. The scripts go straight into Roblo
 4. Press **Play**. The test scene builds itself.
 
 Controls and settings are documented below once the first version is out.
+
+## Content warning
+
+Rophoric includes **realistic blood, wounds and dismemberment**. On Roblox, an experience with this content needs a matching maturity rating: complete the experience's maturity questionnaire before publishing. Gore can be turned down or off in the settings.
 
 ## Repository layout
 
