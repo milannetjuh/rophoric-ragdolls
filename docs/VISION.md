@@ -20,7 +20,7 @@ This file describes **what the user wants the finished system to look and feel l
   - **Mark the script type in the file name:** `.server.luau` for a Script, `.client.luau` for a LocalScript, plain `.luau` for a ModuleScript. A ModuleScript with children is a folder with an `init.luau` inside.
   - **Write `MANIFEST.md`:** a table of every file, its exact place in Studio (for example `ReplicatedStorage.Ragdoll.Balance`) and its script type. Note anything that must exist in Studio besides scripts.
   - **Build everything else from code:** the floor, lighting, spawn points, dummies and settings folders are created by scripts at start. No hand-built parts or models in Studio, and no `.rbxl` or `.rbxm` files in the repo. Then the scripts alone are the whole game.
-  - Document the controls in the `README`.
+  - **The `README` already exists and is written for the public,** because the user plans to make the repo public. Keep its style and structure: tick off features as they're done, fill in the controls and settings sections, and keep the Getting started steps accurate. Don't replace it with internal notes; those belong in `docs/`.
 - **Start from scratch, on purpose.** An earlier engine exists, but the user is deliberately **not** giving you its code. They want a new design, not a cleaned-up copy of the old one. Design from first principles: what makes real people look real when they're hit, and what's the best way to get that in Roblox physics. Section 9 lists the old engine's mistakes, so you don't have to rediscover them.
 - **Ask before you build.** Start with the questions in section 7, wait for the answers, then propose a design and plan in plain words.
 
